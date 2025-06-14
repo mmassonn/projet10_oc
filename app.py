@@ -15,12 +15,22 @@ from implicit.evaluation import precision_at_k, mean_average_precision_at_k, ndc
 import pickle
 import flask
 from flask import jsonify
+from huggingface_hub import login, hf_hub_download
+from huggingface_hub import HfApi
 
+HF_TOKEN = os.environ.get("HUGGINGFACE_TOKEN")
+login(token=HF_TOKEN)
 
-clicks = pd.read_csv("https://github.com/archiducarmel/p9-oc/releases/download/clicks/clicks.csv")
-MODEL_PATH = "./recommender.model"
-if not os.path.exists(MODEL_PATH):
-    os.system("wget https://github.com/archiducarmel/p9-oc/releases/download/clicks/recommender.model")
+# Model
+REPO_ID = "mmassonn/Recommandation_model"
+MODEL_FILE_NAME = "recommender.model"
+model_path = hf_hub_download(repo_id=REPO_ID,filename=MODEL_FILE_NAME)
+
+# Dataset
+REPO_ID_DATASET = "mmassonn/recommandation"
+DATA_FILE_NAME = "clicks.csv"
+clicks_path = hf_hub_download(repo_id=REPO_ID_DATASET,filename=DATA_FILE_NAME)
+clicks = pd.read_csv(clicks_path)
 
 def compute_interaction_matrix(clicks):
     interactions = clicks.groupby(['user_id', 'article_id']).size().reset_index(name='count')
