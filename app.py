@@ -1,15 +1,6 @@
 import os
 import pandas as pd
-import numpy as np
-from time import time
-from random import randint
-from sklearn.metrics.pairwise import cosine_similarity
-
 from scipy.sparse import csr_matrix
-from sklearn.model_selection import train_test_split
-
-from tqdm import tqdm
-
 import pickle
 import flask
 from flask import jsonify
@@ -42,15 +33,10 @@ def compute_interaction_matrix(clicks):
 
 
 def get_cf_reco(clicks, userID, csr_item_user, csr_user_item, model_path, n_reco=5):
-    start = time()
     with open(MODEL_PATH, 'rb') as filehandle:
         model = pickle.load(filehandle)
     recommendations_list = []
     recommendations = model.recommend(userID, csr_user_item[userID], N=n_reco, filter_already_liked_items=True)
-
-    print(f'[INFO] : Completed in {round(time() - start, 2)}s')
-    print(f'[INFO] : Recopendations for user {userID}: {recommendations[0].tolist()}')
-
     return recommendations[0].tolist()
 
 
