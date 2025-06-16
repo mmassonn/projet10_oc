@@ -10,8 +10,6 @@ from sklearn.model_selection import train_test_split
 
 from tqdm import tqdm
 
-from implicit.lmf import LogisticMatrixFactorization
-from implicit.evaluation import precision_at_k, mean_average_precision_at_k, ndcg_at_k, AUC_at_k
 import pickle
 import flask
 from flask import jsonify
@@ -43,17 +41,10 @@ def compute_interaction_matrix(clicks):
     return csr_item_user, csr_user_item
 
 
-def get_cf_reco(clicks, userID, csr_item_user, csr_user_item, model_path=None, n_reco=5, train=True):
+def get_cf_reco(clicks, userID, csr_item_user, csr_user_item, model_path, n_reco=5):
     start = time()
-    if train or model_path is None:
-        model = LogisticMatrixFactorization(factors=128, random_state=42)
-        print("[INFO] : Start training model")
-        model.fit(csr_user_item)
-        with open('recommender.model', 'wb') as filehandle:
-            pickle.dump(model, filehandle)
-    else:
-        with open(MODEL_PATH, 'rb') as filehandle:
-            model = pickle.load(filehandle)
+    with open(MODEL_PATH, 'rb') as filehandle:
+        model = pickle.load(filehandle)
     recommendations_list = []
     recommendations = model.recommend(userID, csr_user_item[userID], N=n_reco, filter_already_liked_items=True)
 
