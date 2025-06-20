@@ -4,22 +4,11 @@ from scipy.sparse import csr_matrix
 import pickle
 import flask
 from flask import jsonify
-from huggingface_hub import login, hf_hub_download
-from huggingface_hub import HfApi
 
-HF_TOKEN = os.environ.get("HUGGINGFACE_TOKEN")
-login(token=HF_TOKEN)
-
-# Model
-REPO_ID = "mmassonn/Recommandation_model"
-MODEL_FILE_NAME = "recommender.model"
-model_path = hf_hub_download(repo_id=REPO_ID,filename=MODEL_FILE_NAME)
-
-# Dataset
-REPO_ID_DATASET = "mmassonn/recommandation"
-DATA_FILE_NAME = "clicks.csv"
-clicks_path = hf_hub_download(repo_id=REPO_ID_DATASET,filename=DATA_FILE_NAME)
-clicks = pd.read_csv(clicks_path)
+clicks = pd.read_csv("https://github.com/mmassonn/projet10_oc/releases/download/v1.0.0/clicks.csv")
+MODEL_PATH = "./recommender.model"
+if not os.path.exists(MODEL_PATH):
+    os.system("wget https://github.com/mmassonn/projet10_oc/releases/download/v1.0.0/recommender.model")
 
 def compute_interaction_matrix(clicks):
     interactions = clicks.groupby(['user_id', 'article_id']).size().reset_index(name='count')
@@ -51,7 +40,7 @@ def home():
 @app.route("/get_recommendation/<id>", methods=["POST", "GET"])
 def get_recommendation(id):
 
-    recommendations = get_cf_reco(clicks, int(id), csr_item_user, csr_user_item, model_path=MODEL_PATH, n_reco=5, train=False)
+    recommendations = get_cf_reco(clicks, int(id), csr_item_user, csr_user_item, model_path=MODEL_PATH, n_reco=5)
     data = {
             "user" : id,
             "recommendations" : recommendations,
