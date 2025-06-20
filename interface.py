@@ -2,29 +2,27 @@ import streamlit as st
 import requests
 import json
 
-# Set the URL of the Azure function
 azure_url = "https://webrecommender.azurewebsites.net/api/recommandationfunction?"
 
 st.title("Recommandation des articles")
 
-# Input for user ID
-user_id_input = st.number_input("Entrez un numéro d'utilisateur :", min_value=1, value=1220)
+# Afficher un menu déroulant pour la sélection de l'ID utilisateur
+user_ids = list(range(1, 2001))
+user_id_input = st.selectbox("Sélectionnez un numéro d'utilisateur :", user_ids)
 
-# Button to trigger the recommendation
 if st.button("Description"):
     try:
-        # Set the parameters of the request
         request_params = {"user_id": user_id_input}
 
-        # Send the request to the Azure function
+        # Envoyer la requête
         with st.spinner("Récupération des recommandations..."):
             r = requests.post(azure_url, params=request_params)
-            r.raise_for_status() # Raise an HTTPError for bad responses (4xx or 5xx)
+            r.raise_for_status()
 
-        # Grab the recommendations as a Python dictionary
+        # Mettre les recommendation dans un dictionnaire python
         recommendations_dict = json.loads(r.content.decode())
 
-        # Display the recommendations
+        # Afficher les recommandation
         st.subheader("Recommandations :")
         if recommendations_dict:
             st.json(recommendations_dict) # Displays the dictionary as a formatted JSON
